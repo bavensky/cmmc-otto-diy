@@ -8,6 +8,10 @@
 #include <Servo.h>
 #include <Oscillator.h>
 #include <EEPROM.h>
+#include <ArduinoJson.h>
+#include <SoftwareSerial.h>
+SoftwareSerial softSerial(11, 12); // RX, TX
+StaticJsonBuffer<200> jsonBuffer;
 
 #define N_SERVOS 4
 //-- First step: Configure the pins where the servos are attached
@@ -22,25 +26,30 @@
   RR 10==>   -----   ------  <== RL 9
          |-----   ------|
 */
-#define EEPROM_TRIM false
-// Green OTTO
-//#define TRIM_RR 0
-//#define TRIM_RL 8
-//#define TRIM_YR -5
-//#define TRIM_YL 8
-// Black OTTO
-#define TRIM_RR -5
-#define TRIM_RL 0
-#define TRIM_YR 9
-#define TRIM_YL -8
-
-//OTTO.setTrims(0,8,-5,8);
-
 #define PIN_RR 10 //5
 #define PIN_RL 9  //4
 #define PIN_YR 5  //3
 #define PIN_YL 6  //2
 
+////Green OTTO
+//#define TRIM_RR 0
+//#define TRIM_RL 8
+//#define TRIM_YR -5
+//#define TRIM_YL 8
+//// Black OTTO
+//#define TRIM_RR -5
+//#define TRIM_RL 0
+//#define TRIM_YR 9
+//#define TRIM_YL -8
+// Blue OTTO
+#define TRIM_RR -5
+#define TRIM_RL 8
+#define TRIM_YR -4
+#define TRIM_YL -10
+
+//OTTO.setTrims(0,8,-5,8);
+
+#define EEPROM_TRIM false
 #define INTERVALTIME 10.0
 
 Oscillator servo[N_SERVOS];
@@ -66,6 +75,7 @@ void flapping(int steps, int T = 1000);
 void setup()
 {
   Serial.begin(19200);
+  softSerial.begin(4800);
 
   servo[0].attach(PIN_RR);
   servo[1].attach(PIN_RL);
@@ -97,20 +107,13 @@ void setup()
     servo[3].SetTrim(TRIM_YL);
   }
 
-  //  for (int i = 0; i < 4; i++) servo[i].SetPosition(90);
-  run(5, 500);
   //  walk(2, 1000);
-  //  for (int i = 0; i < 4; i++) servo[i].SetPosition(90);
-  //  delay(1000);
+  //  delay(200);
   //  backyard(2, 1000);
+  //  delay(200);
+  //  swing(5, 1000);
+  //
   //  for (int i = 0; i < 4; i++) servo[i].SetPosition(90);
-  //  delay(1000);
-  //  kickLeft(1000);
-  //  drunk(3, 1000);
-
-  swing(3, 1000);
-  delay(1000);
-  for (int i = 0; i < 4; i++) servo[i].SetPosition(90);
 }
 
 // TEMPO: 121 BPM
@@ -119,6 +122,16 @@ double pause = 0;
 
 void loop()
 {
+  if (softSerial.available() > 0) {
+    JsonObject& robot = jsonBuffer.parseObject(softSerial); // เรียกใช้ออบเจคเพื่อเก็บข้อมูลที่อ่านได้จากพอร์ตอนุกรมแบบซอฟแวร์
+    int command = robot["command"];
+    Serial.print("command is : ");
+    Serial.println(command);
+    delay(500);
+  }
+  if (Serial.available()) {
+    mySerial.write(Serial.read());
+  }
   //  test(5, 500);/
 
   // if(Serial.available()){
