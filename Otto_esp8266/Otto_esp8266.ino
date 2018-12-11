@@ -10,7 +10,8 @@
 #include <EEPROM.h>
 #include <ArduinoJson.h>
 #include <SoftwareSerial.h>
-SoftwareSerial softSerial(11, 12); // RX, TX
+SoftwareSerial softSerial(11, 12); // RX, TX // OTTO Arduino NANO
+SoftwareSerial chat(12, 14); // RX, TX // from ESP
 StaticJsonBuffer<200> jsonBuffer;
 
 #define N_SERVOS 4
